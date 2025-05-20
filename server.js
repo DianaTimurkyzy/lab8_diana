@@ -8,6 +8,7 @@ const productsRoutes = require("./routing/products");
 const logoutRoutes = require("./routing/logout");
 const killRoutes = require("./routing/kill");
 const homeRoutes = require("./routing/home");
+const cartRoutes = require("./routing/cart");
 const { STATUS_CODE } = require("./constants/statusCode");
 const { MENU_LINKS } = require("./constants/navigation");
 const getFileFromAbsolutePath = require("./utils/getFileFromAbsolutePath");
@@ -27,6 +28,7 @@ app.use((request, _response, next) => {
 });
 
 app.use("/products", productsRoutes);
+app.use("/cart", cartRoutes);
 app.use("/logout", logoutRoutes);
 app.use("/kill", killRoutes);
 app.use(homeRoutes);

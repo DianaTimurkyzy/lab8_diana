@@ -5,11 +5,15 @@ const { STATUS_CODE } = require("../constants/statusCode");
 const addProductToCart = async (req, res) => {
   const { name } = req.body;
   try {
+    const product = await Product.findByName(name);
+    if (!product) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({ error: `Product "${name}" not found` });
+    }
     await Cart.add(name);
     const cartCount = await Cart.getProductsQuantity();
-    res.status(STATUS_CODE.FOUND).json({ success: true, cartCount });
+    res.status(STATUS_CODE.OK).json({ success: true, cartCount });
   } catch (error) {
-    res.status(STATUS_CODE.NOT_FOUND).json({ error: error.message });
+    res.status(STATUS_CODE. NOT_FOUND).json({ error: error.message });
   }
 };
 

@@ -1,15 +1,21 @@
 const Product = require("../models/Product");
 const Cart = require("../models/Cart");
-
 const { STATUS_CODE } = require("../constants/statusCode");
 
-exports.addProductToCart = async (request, response) => {
-  await Product.add(request.body);
-  await Cart.add(request.body.name);
-
-  response.status(STATUS_CODE.FOUND).redirect("/products/new");
+const addProductToCart = async (req, res) => {
+  const { name } = req.body;
+  try {
+    await Cart.add(name);
+    const cartCount = await Cart.getProductsQuantity();
+    res.status(STATUS_CODE.FOUND).json({ success: true, cartCount });
+  } catch (error) {
+    res.status(STATUS_CODE.NOT_FOUND).json({ error: error.message });
+  }
 };
 
-exports.getProductsCount = async () => {
-  return await Cart.getProductsQuantity();
+const getProductsCount = async (req, res) => {
+  const quantity = await Cart.getProductsQuantity();
+  res.json({ quantity });
 };
+
+module.exports = { addProductToCart, getProductsCount };

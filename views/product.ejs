@@ -2,16 +2,22 @@
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title><%= product.name %> - Szczegóły</title>
+    <title><%= product ? product.name + " - Szczegóły" : "Product Not Found" %></title>
     <link rel="stylesheet" href="/css/main.css" />
   </head>
   <body>
     <main>
       <%- include('partials/navigation', { menuLinks: menuLinks, activeLinkPath:
       activeLinkPath, cartCount: cartCount }); %>
+      <% if (!product) { %>
+        <p>Product not found.</p>
+      <% } else { %>
       <h1 class="heading"><%= product.name %></h1>
       <div><%= product.description %></div>
-      <button onclick="deleteProduct('<%= product.name %>')">Delete</button>
+        <p class="product_price"><%= product.price.toFixed(2) %> zł</p>
+        <button class="product_button product_button--add" onclick="addToCart('<%= product.name %>')">Add to Cart</button>
+        <button class="product_button product_button--delete" onclick="deleteProduct('<%= product.name %>')">Delete</button>
+      <% } %>
     </main>
     <script>
       function deleteProduct(name) {
@@ -28,6 +34,22 @@
             alert("Error while removing product.");
           }
         });
+      }
+      async function addToCart(productName) {
+        try {
+          const response = await fetch('/cart/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: productName })
+          });
+          if (response.ok) {
+            alert('Product added to cart');
+          } else {
+            throw new Error('Failed to add to cart');
+          }
+        } catch (error) {
+          alert('Error: ' + error.message);
+        }
       }
     </script>
   </body>

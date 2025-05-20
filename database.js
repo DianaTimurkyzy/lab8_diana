@@ -1,25 +1,31 @@
+const { MongoClient } = require("mongodb");
 const { DB_USER, DB_PASS } = require("./config");
-const mongodb = require("mongodb");
-const MongoClient = mongodb.MongoClient;
 
 let database;
 
 const mongoConnect = (callback) => {
-  MongoClient.connect(`mongodb+srv://${DB_USER}:${DB_PASS}@`)
-    .then((client) => {
-      console.log("Connected!");
-      database = client.db("shop");
-      callback();
-    })
-    .catch((error) => console.log(error));
+    const uri = `mongodb+srv://${DB_USER}:${DB_PASS}@dianacluster.kfvzuiw.mongodb.net/?retryWrites=true&w=majority&appName=DianaCluster`;
+
+    const client = new MongoClient(uri);
+
+    client
+        .connect()
+        .then(() => {
+            console.log("Connection to the database has been established.");
+            database = client.db("shop");
+            callback();
+        })
+        .catch((error) => {
+            console.error("Connection error:", error);
+            process.exit(1);
+        });
 };
 
 const getDatabase = () => {
-  if (!database) {
-    throw "No database found!";
-  }
-
-  return database;
+    if (!database) {
+        throw new Error("No database found.");
+    }
+    return database;
 };
 
 module.exports = { mongoConnect, getDatabase };

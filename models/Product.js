@@ -1,4 +1,5 @@
 const { getDatabase } = require("../database");
+const Cart = require("./Cart");
 
 const COLLECTION_NAME = "products";
 
@@ -9,74 +10,44 @@ class Product {
     this.price = price;
   }
 
-  static async getAll() {
-    const db = getDatabase();
-
-    try {
-      const products = await db.collection(COLLECTION_NAME).find({}).toArray();
-
-      return products;
-    } catch (error) {
-      console.error("Error occurred while searching for all products");
-
-      return [];
-    }
-  }
-
   static async add(product) {
     const db = getDatabase();
-
-    try {
-      await db.collection(COLLECTION_NAME).insertOne(product);
-    } catch (error) {
-      console.error("Error occurred while adding product");
+    const collection = db.collection(COLLECTION_NAME);
+    const existingProduct = await collection.findOne({ name: product.name });
+    if (existingProduct) {
+      throw new Error(`Product with name "${product.name}" already exists`);
     }
+    const result = await collection.insertOne(product);
+    console.log("Product added:", result);
+    return result.insertedId;
+  }
+
+  static async getAll() {
+    const db = getDatabase();
+    const collection = db.collection(COLLECTION_NAME);
+    return await collection.find().toArray();
   }
 
   static async findByName(name) {
     const db = getDatabase();
-
-    try {
-      const searchedProduct = await db
-        .collection(COLLECTION_NAME)
-        .findOne({ name });
-
-      return searchedProduct;
-    } catch (error) {
-      console.error("Error occurred while searching product");
-
-      return null;
-    }
+    const collection = db.collection(COLLECTION_NAME);
+    return await collection.findOne({ name });
   }
 
   static async deleteByName(name) {
     const db = getDatabase();
-
-    try {
-      await db.collection(COLLECTION_NAME).deleteOne({ name });
-    } catch (error) {
-      console.error("Error occurred while deleting product");
-    }
+    const collection = db.collection(COLLECTION_NAME);
+    await Cart.deleteProductByName(name);
+    const result = await collection.deleteOne({ name });
+    console.log("Product deleted:", result);
+    return result.deletedCount;
   }
 
   static async getLast() {
     const db = getDatabase();
-
-    try {
-      const lastAddedProduct = await db
-        .collection(COLLECTION_NAME)
-        .find({})
-        .sort({ _id: -1 })
-        .limit(1)
-        .toArray()
-        .then((docs) => docs[0]);
-
-      return lastAddedProduct;
-    } catch (error) {
-      console.error("Error occurred while searching for last product");
-
-      return null;
-    }
+    const collection = db.collection(COLLECTION_NAME);
+    const products = await collection.find().sort({ _id: -1 }).limit(1).toArray();
+    return products[0] || null;
   }
 }
 
